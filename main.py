@@ -4,6 +4,7 @@ import sys
 
 from PyQt6.QtWidgets import (
     QApplication,
+    QComboBox,
     QFileDialog,
     QHBoxLayout,
     QMainWindow,
@@ -14,16 +15,16 @@ from PyQt6.QtWidgets import (
 )
 
 
-def get_hash(file_path):
+def get_hash(file_path, mode):
     CHUNK_SIZE = 65536
     file_path = os.path.abspath(file_path)
 
-    sha256 = hashlib.sha256()
+    hasher = hashlib.new(mode)
     with open(file_path, "rb") as f:
         while chunk := f.read(CHUNK_SIZE):
-            sha256.update(chunk)
+            hasher.update(chunk)
 
-    return sha256.hexdigest()
+    return hasher.hexdigest()
 
 
 class MainWin(QMainWindow):
@@ -51,15 +52,26 @@ class MainWin(QMainWindow):
         self.hashName.setReadOnly(True)
         self.hashName.setFixedHeight(32)
 
+        self.algoBox = QComboBox(self)
+        self.algoBox.addItems(["sha256", "md5"])
+        # self.algoText = self.algoBox.currentText()
+
         # Create layout for file row
         file_row = QHBoxLayout()
         file_row.setSpacing(8)
         file_row.addWidget(self.uploadButton, stretch=0)
         file_row.addWidget(self.fileName, stretch=1)
 
+        # Create layout for hash row
+
+        hash_row = QHBoxLayout()
+        hash_row.setSpacing(8)
+        hash_row.addWidget(self.algoBox, stretch=0)
+        hash_row.addWidget(self.hashingButton, stretch=1)
+
         # Add to main layout
         main_layout.addLayout(file_row)
-        main_layout.addWidget(self.hashingButton)
+        main_layout.addLayout(hash_row)
         main_layout.addWidget(self.hashName)
         main_layout.addStretch()
 
@@ -83,12 +95,17 @@ class MainWin(QMainWindow):
     def hash(self):
         try:
             self.setWindowTitle("Hashing...")  # Yes the title change is necessary.
-            file_checked = get_hash(self.file)
-            self.setWindowTitle("Hash-GUI")
+
+            # chooses the algo to take
+            algotext = self.algoBox.currentText()
+            file_checked = get_hash(self.file, algotext)
+
             # Shows the hashed text
             self.hashName.setText(file_checked)
-        except AttributeError:
+        except (AttributeError, PermissionError):
             self.hashName.setText("Please choose a file")
+        finally:
+            self.setWindowTitle("Hash-GUI")
 
 
 if __name__ == "__main__":
