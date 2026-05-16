@@ -67,6 +67,34 @@ class MainWin(QMainWindow):
         self.uploadButton.clicked.connect(self.dialog)
         self.hashingButton.clicked.connect(self.hash)
 
+        file_row = QHBoxLayout()
+        file_row.setSpacing(8)
+
+        # Actual widgets
+        uploadButton = QPushButton("Open file", self)
+        self.fileName = QTextEdit(self)
+        self.fileName.setReadOnly(True)
+        self.fileName.setFixedHeight(32)
+
+        hashingButton = QPushButton("Hash file", self)
+        hashingButton.setFixedHeight(48)
+        self.hashName = QTextEdit(self)
+        self.hashName.setReadOnly(True)
+        self.hashName.setFixedHeight(32)
+
+        # Layouts
+
+        file_row.addWidget(uploadButton, stretch=0)
+        file_row.addWidget(self.fileName, stretch=1)
+
+        main_layout.addLayout(file_row)
+        main_layout.addWidget(hashingButton)
+        main_layout.addWidget(self.hashName)
+        main_layout.addStretch()
+
+        # Connect widgets to funcs
+        uploadButton.clicked.connect(self.dialog)
+        hashingButton.clicked.connect(self.hash)
         self.show()
 
     def dialog(self):
